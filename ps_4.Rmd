@@ -1,0 +1,20 @@
+---
+title: 'Problem Set #4'
+author: "Céline Vendler"
+date: "2/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE,
+                      error = FALSE, 
+                      warning = FALSE)
+
+# Load library "gt" in order to be able to create and format the chart in Question 2
+library(gt)
+library(tidyverse)
+
+# Read in the file "ps_4_elections-poll-nc09-3.csv" and store as new dataset called "orig_data"
+orig_data <- read_csv("ps_4_elections-poll-nc09-3.csv")
+```
