@@ -137,7 +137,7 @@ gt(data_to_chart) %>%
 ## Question 3
 
 ```{r create_graphic, fig.width = 7.1}
-# Create a new dataset called "data_to_plot" to plot using ggplot; begin with the "orig_data" dataset
+# Create a new dataset called "data_to_plot" to plot using ggplot; begin with the "orig_data" dataset; set the width of the figure to 7.1 so that my subtitle does not get cut off when I knit this Rmd file (thank you to Jenny for this clever solution)
 data_to_plot <- orig_data %>% 
   # Select only the variables pertinent to the plot, which are "educ" and "final_weight"
   select(educ, final_weight) %>% 
