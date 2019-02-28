@@ -89,8 +89,11 @@ data_to_chart <- orig_data %>%
   # Filter the data so that answers to "race_eth" that read "[DO NOT READ] Don't know/Refused" are excluded, per the instruction within the brackets: "DO NOT READ"
   filter(race_eth != "[DO NOT READ] Don't know/Refused") %>% 
   # Reorder the levels of the factor "race_eth" so that "White" is first, "Black" is second, "Hispanic" is third, "Asian" is fourth, and "Other" is fifth
-  mutate(race_eth = fct_relevel(race_eth, 
-                                c("White", "Black", "Hispanic", "Asian", "Other"))) %>% 
+  mutate(race_eth = fct_relevel(race_eth, c("White", 
+                                            "Black", 
+                                            "Hispanic", 
+                                            "Asian", 
+                                            "Other"))) %>% 
   # Group the data by the variables "race_eth" and "response" in order to calculate weighted totals (the sums of final weights) by combinations of "race_eth" and "response"
   group_by(race_eth, response) %>% 
   # Calculate "race_eth" and "response" combinations' respective weighted totals ("weighted_total") by summing the final weights within those combinations
@@ -140,12 +143,22 @@ data_to_plot <- orig_data %>%
   select(educ, final_weight) %>% 
   # Filter the data so that answers to "educ" that read "[DO NOT READ] Refused" are excluded, per the instruction within the brackets: "DO NOT READ"
   filter(educ != "[DO NOT READ] Refused") %>% 
-  mutate(educ = fct_relevel(educ, c("Grade school", "High school", "Some college or trade school", "Bachelors' degree", "Graduate or Professional Degree")))
+  # Reorder the levels of the factor "educ" so that "Grade school" is first, "High school" is second, "Some college or trade school" is third, "Bachelors' degree" is fourth, and "graduate or Professional Degree" is fifth
+  mutate(educ = fct_relevel(educ, c("Grade school", 
+                                    "High school", 
+                                    "Some college or trade school", 
+                                    "Bachelors' degree", 
+                                    "Graduate or Professional Degree")))
 
+# Plot data_to_plot; set "educ" as the x-axis variable and "final_weight" as the y-axis variable; these assignments will later be flipped using the "coord_flip" function, but the ultimate goal is to be able to visualize the density of weights given to respondents of various levels of education and to be able to make comparisons across levels of education
 ggplot(data_to_plot, aes(x = educ, y = final_weight)) + 
+  # Make the plot a violin plot so that the above goal can be accomplished
   geom_violin() + 
+  # Flip the coordinates so that x becomes y and y becomes x; visually, "final_weight" appears as the x-axis variable, and "educ" appears as the y-axis variable
   coord_flip() + 
+  # Add "jittered" points to the plot (add random variation to the locations of points); set height (which, because of the flipping of coordinates, really affects width) and width (which, for the same reason, really affects height) values for the random noise so that the points match those on the plot provided in the problem set as closely as possible; set alpha to 0.5 so that the points are semi-transparent (so that individual points appear grey and not black)
   geom_jitter(height = 0.1, width = 0.2, alpha = 0.5) + 
+  # Remove the x-axis label (which, visually, appears as the y-axis label, so I am removing the label for all the educational levels on the plot); give the y-axis (which, visually, appears as the x-axis) the label "Weight Given to Respondent in Calculating Poll Results"; give the plot a title, subtitle, and caption to match the plot provided in the problem set
   labs(x = "", 
        y = "Weight Given to Respondent in Calculating Poll Results", 
        title = "More Educated Matter Less in North Carolina 9th", 
