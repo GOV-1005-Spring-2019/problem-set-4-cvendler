@@ -78,3 +78,55 @@ There are two gender variables (`gender` and `gender_combined`). There are `r ma
 There are `r mad_lib_4` respondents listed as “White” under `race_eth` who are not listed as “White” under  `file_race_black`.
 
 The first `response` of Dem came `r mad_lib_5` minutes (rounded to the nearest minute) before the first `response` of Rep.
+
+## Question 2
+
+```{r create_chart}
+# Create a new dataset called "data_to_chart" to chart using gt; begin with the "orig_data" dataset
+data_to_chart <- orig_data %>% 
+  # Select only the variables pertinent to the chart, which are "response", "race_eth", and "final_weight"
+  select(response, race_eth, final_weight) %>% 
+  # Filter the data so that answers to "race_eth" that read "[DO NOT READ] Don't know/Refused" are excluded, per the instruction within the brackets: DO NOT READ
+  filter(race_eth != "[DO NOT READ] Don't know/Refused") %>% 
+  # Reorder the levels of the factor "race_eth" so that "White" is first, "Black" is second, "Hispanic" is third, "Asian" is fourth, and "Other" is fifth
+  mutate(race_eth = fct_relevel(race_eth, 
+                                c("White", "Black", "Hispanic", "Asian", "Other"))) %>% 
+  # Group the data by the variables "race_eth" and "response" in order to calculate weighted totals (the sums of final weights) by combinations of "race_eth" and "response"
+  group_by(race_eth, response) %>% 
+  # Calculate "race_eth" and "response" combinations' respective weighted totals ("weighted_total") by summing the final weights within those combinations
+  summarize(weighted_total = sum(final_weight)) %>% 
+  # Spread the data using the varible "response" (the values of which are "3", "Dem", "Rep", and "Und") as the key and using the variable "weighted_total" (the values of which are the weighted totals of the "race_eth" and "response" combinations, respectively) as the value so that the dataset has five columns--"race_eth", "3", "Dem", "Rep", and "Und"--and five rows, within which are the values of "race_eth"--"White", "Black", "Hispanic", "Asian", and "Other"--and the weighted totals by "race_eth" and "response"; replace values of "NA" with 0
+  spread(response, weighted_total, 
+         fill = 0) %>% 
+  # Ungroup the data in order to be able to manipulate individual (ungrouped) observations
+  ungroup() %>% 
+  # Create a new variable called "total_by_race_eth", the values of which are the sums of the values of the columns "3", "Dem", "Rep", and "Und" by "race_eth" (the sums of the weighted totals by "race_eth" and "response" for each "race_eth")
+  mutate(total_by_race_eth = `3` + Dem + Rep + Und) %>% 
+  # Alter the variable "Dem" by making its values equal to the original values of "Dem" divided by the corresponding values of "total_by_race_eth" so that the values of "Dem" are now decimals, reflecting the proportions of White, Black, Hispanic, Asian, and Other respondents who responded "Dem", respectively
+  mutate(Dem = Dem / total_by_race_eth) %>% 
+  # Alter the variable "Rep" by making its values equal to the original values of "Rep" divided by the values of "total_by_race_eth" so that the values of "Rep" are now decimals, reflecting the proportions of White, Black, Hispanic, Asian, and Other respondents who responded "Rep", respectively
+  mutate(Rep = Rep / total_by_race_eth) %>% 
+  # Alter the variable "Und" by making its values equal to the original values of "Und" divided by the corresponding values of "total_by_race_eth" so that the values of "Und" are now decimals, reflecting the proportions of White, Black, Hispanic, Asian, and Other respondents who responded "Und", respectively
+  mutate(Und = Und / total_by_race_eth) %>% 
+  # Deselect the variables "total_by_race_eth" and "3", as they are not needed anymore
+  select(-c(total_by_race_eth, `3`)) %>% 
+  # Set all values of 0 to "NA"
+  na_if(0)
+
+# Chart "data_to_chart" using functions from the library "gt"
+gt(data_to_chart) %>% 
+  # Give the chart a title; I chose to make my title "Polling Results from 3rd Wave for North Carolina's 9th Congressional District," as the data used is polling data from 3rd wave for North Carolina’s 9th Congressional District
+  tab_header(title = "Polling Results from 3rd Wave for North Carolina's 9th Congressional District") %>% 
+  # Give the chart a source note, citing The New York Times Upshot and Siena College and their 2018 live polls
+  tab_source_note(source_note = "New York Times Upshot/Siena College 2018 live polls") %>% 
+  # Relabel the chart's columns so that the label "race_eth" is removed, so that Dem reads "DEM.", so that Rep reads "REP.", and so that Und reads "UND."
+  cols_label(race_eth = "", 
+             Dem = "DEM.", 
+             Rep = "REP.", 
+             Und = "UND.") %>% 
+  # Reformat the values in the rows corresponding to the columns "DEM.", "REP.", and "UND." so that the decimal values appear as whole-number percentages
+  fmt_percent(columns = vars(Dem, Rep, Und), 
+              decimals = 0) %>% 
+  # Reformat the value housed in the fourth row of the "UND." column, which reads "NA", as a missing value, so that "NA" is replaced with an em-dash
+  fmt_missing(columns = vars(Und), rows = 4)
+```
