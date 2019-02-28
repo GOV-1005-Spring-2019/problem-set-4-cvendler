@@ -232,3 +232,7 @@ ggplot(both, aes(x = gender, y = proportion, fill = response)) +
   scale_fill_manual(labels = c("Democrat", "Republican", "Undecided", "Third Party"), 
                     values = c("skyblue2", "lightcoral", "thistle4", "plum3"))
 ```
+
+## Colleagues
+
+I attended Dillon's study hall, used Jenny's response to my Piazza question, and reached out to Albert for help with Question 4 and GitHub.
