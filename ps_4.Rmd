@@ -94,7 +94,7 @@ data_to_chart <- orig_data %>%
                                             "Hispanic", 
                                             "Asian", 
                                             "Other"))) %>% 
-  # Group the data by the variables "race_eth" and "response" in order to calculate weighted totals (the sums of final weights) by combinations of "race_eth" and "response"
+  # Group the data by the variables "race_eth" and "response" in order to be able to calculate weighted totals (the sums of final weights) by combination of "race_eth" and "response"
   group_by(race_eth, response) %>% 
   # Calculate "race_eth" and "response" combinations' respective weighted totals ("weighted_total") by summing the final weights within those combinations
   summarize(weighted_total = sum(final_weight)) %>% 
@@ -120,7 +120,7 @@ data_to_chart <- orig_data %>%
 gt(data_to_chart) %>% 
   # Give the chart a title; I chose to make my title "Polling Results from 3rd Wave for North Carolina's 9th Congressional District," as the data used is polling data from 3rd wave for North Carolina’s 9th Congressional District
   tab_header(title = "Polling Results from 3rd Wave for North Carolina's 9th Congressional District") %>% 
-  # Give the chart a source note, citing The New York Times Upshot and Siena College and their 2018 live polls
+  # Give the chart a source note, citing The New York Times Upshot and Siena College and their 2018 live polls; I chose the source provided in the violin plot from the problem set
   tab_source_note(source_note = "New York Times Upshot/Siena College 2018 live polls") %>% 
   # Relabel the chart's columns so that the label "race_eth" is removed, so that Dem reads "DEM.", so that Rep reads "REP.", and so that Und reads "UND."
   cols_label(race_eth = "", 
@@ -137,7 +137,9 @@ gt(data_to_chart) %>%
 ## Question 3
 
 ```{r create_graphic, fig.width = 7.1}
-# Create a new dataset called "data_to_plot" to plot using ggplot; begin with the "orig_data" dataset; set the width of the figure to 7.1 so that my subtitle does not get cut off when I knit this Rmd file (thank you to Jenny for this clever solution)
+# Set the width of the figure to 7.1 so that my subtitle does not get cut off when I knit this Rmd file (thank you to Jenny for this clever solution)
+
+# Create a new dataset called "data_to_plot" to plot using ggplot; begin with the "orig_data" dataset
 data_to_plot <- orig_data %>% 
   # Select only the variables pertinent to the plot, which are "educ" and "final_weight"
   select(educ, final_weight) %>% 
@@ -150,7 +152,7 @@ data_to_plot <- orig_data %>%
                                     "Bachelors' degree", 
                                     "Graduate or Professional Degree")))
 
-# Plot data_to_plot; set "educ" as the x-axis variable and "final_weight" as the y-axis variable; these assignments will later be flipped using the "coord_flip" function, but the ultimate goal is to be able to visualize the density of weights given to respondents of various levels of education and to be able to make comparisons across levels of education
+# Plot "data_to_plot"; set "educ" as the x-axis variable and "final_weight" as the y-axis variable; these assignments will later be flipped using the "coord_flip" function, but the ultimate goal is to be able to visualize the density of weights given to respondents of various levels of education and to be able to make comparisons across levels of education
 ggplot(data_to_plot, aes(x = educ, y = final_weight)) + 
   # Make the plot a violin plot so that the above goal can be accomplished
   geom_violin() + 
@@ -164,4 +166,69 @@ ggplot(data_to_plot, aes(x = educ, y = final_weight)) +
        title = "More Educated Matter Less in North Carolina 9th", 
        subtitle = "Poll gives more weight to people who are less likely to participate in polls", 
        caption = "New York Times Upshot/Siena College 2018 live polls")
+```
+
+## Question 4
+
+```{r create_my_plot, fig.width = 7.6}
+# Set the width of the figure to 7.6 so that my subtitle does not get cut off when I knit this Rmd file
+
+# Create a new dataset called "female_data" in order to manipulate only data for female respondents; begin with the "orig_data" dataset; I separate female and male data in this way because I encountered trouble when borrowing from the technique I used in Question 2 and, with help from my brief conversation with Albert after class, found that spreading the data, in this case, is not helpful
+female_data <- orig_data %>% 
+  # Filter the data to keep only observations for female respondents
+  filter(gender == "Female") %>% 
+  # Select only the variables pertinent to my plot, which I intend to be a stacked bar chart (from top to bottom, in decreasing order of percentages), with one bar reflecting the percentages of female respondents who responded "Dem", "Rep", "Und", and "3", respectively, and with the other bar reflecting the percentages of male respondents who responded "Dem", "Rep", "Und", and "3", respectively so that comparisons across the two genders can be made; the pertinent variables are thus "gender" and "response" (while it may seem redundant to select and group by "gender" in addition to "response", I need to so that female and male data can be differentiated from one another once I bind the rows of the two datasets, female and male)
+  select(gender, response) %>% 
+  # Group the data by the variables "gender" and "response" in order to be able to calculate totals (total number of respondents) by combination of "gender" and "response" ("total_by_combination")
+  group_by(gender, response) %>% 
+  # Calculate "gender" and "response" combinations' respective totals by counting the number of observations for those combinations; I do not, as I do in Question 2, use weighted values in this calculation, as the instructions of the problem set specify the variables we should use in this question, and "final_weight" is not one of them
+  summarize(total_by_combination = n()) %>% 
+  # Create a new variable called "total", the values of which are the sums of all the totals by combination, equal to the number of female respondents
+  mutate(total = sum(total_by_combination)) %>% 
+  # Create a new variable called "proportion", the values of which are the totals by combination divided by the sum of all the totals by combination, reflecting the proportions of female respondents who responded "Dem", "Rep", "Und", and "3", respectively
+  mutate(proportion = total_by_combination / total)
+
+# Create a new dataset called "male_data" in order to manipulate only data for male respondents; begin with the "orig_data" dataset
+male_data <- orig_data %>% 
+  # Filter the data to keep only observations for male respondents
+  filter(gender == "Male") %>% 
+  # Select only the variables pertinent to my plot, which are "gender" and "response"
+  select(gender, response) %>% 
+  # Group the data by the variables "gender" and "response" in order to be able to calculate totals (total number of respondents) by combination of "gender" and "response" ("total_by_combination")
+  group_by(gender, response) %>% 
+  # Calculate "gender" and "response" combinations' respective totals by counting the number of observations for those combinations
+  summarize(total_by_combination = n()) %>% 
+  # Create a new variable called "total", the values of which are the sums of all the totals by combination, equal to the number of male respondents
+  mutate(total = sum(total_by_combination)) %>% 
+  # Create a new variable called "proportion", the values of which are the totals by combination divided by the sum of all the totals by combination, reflecting the proportions of male respondents who responded "Dem", "Rep", "Und", and "3", respectively
+  mutate(proportion = total_by_combination / total)
+
+# Create a new dataset called "both" in order to combine the "female_data" and the "male_data" datasets into one dataset so as to be able to plot in one graphic both female and male data using ggplot; begin by binding together the rows of "female_data" and those of "male_data"
+both <- bind_rows(female_data, male_data) %>% 
+  # Deselect the variables "total_by_combination" and "total", as they are not needed anymore
+  select(-c(total_by_combination, total)) %>% 
+  # Reorder the levels of the factor "response" so that "Dem" is first, "Rep" is second, "Und" is third, and "3" is fourth
+  mutate(response = fct_relevel(response, c("Dem", "Rep", "Und", "3")))
+
+# Plot "both", setting "gender" as the x-axis variable, "proportion" as the y-axis variable (through the textual annotations below, I will convert the values of "proportion" from decimals to percentages below so that, visually, the unit of the y-axis is percentage, making the graphic easier to digest)
+ggplot(both, aes(x = gender, y = proportion, fill = response)) + 
+  # Make the plot a bar chart, specifically a "geom_col" chart
+  geom_col() + 
+  # Add textual annotations to the bars, labeling each stacked segment with its corresponding percentage, rounded to the nearest whole number (to reach these percentages, I multiply the values of "proportion" by 100 and round), pasting percent signs ("%") directly to the right of each percentage, separating them by no spaces; position these textual annotations so that they are stacked on top of each other as the individual segments of the bars are and so that each percentage appears in the middle of its corresponding segment; adjust the size of the textual annotations so that they both are visible and fit reasonably within their corresponding segments
+  geom_text(aes(label = paste(round(100 * proportion), "%", sep = "")), 
+            position = position_stack(vjust = 0.5), 
+            size = 3) + 
+  # Remove the x- and y-axis labels, as it is evident that the x-axis variable is "gender" from the labeling of "Female" and "Male" bars and as it is evident that the y-axis values correspond to percentages from the textual annotations; give the plot a title, subtitle, and caption indicating a source; in my subtitle, I chose to highlight the observations that the percentage of female respondents who responded "Dem" is equal to the percentage of male respondents who responded "Rep" and that, similarly, the percentage of female respondents who responded "Rep" is equal to the percentage of male respondents who responded "Dem"; I chose the source provided in the violin plot from the problem set
+  labs(x = "", 
+       y = "", 
+       title = "Comparing Polling Results across Genders", 
+       subtitle = "Female and male respondents support the Democratic and Republican candidates in opposite percentages", 
+       caption = "New York Times Upshot/Siena College 2018 live polls") + 
+  # Remove the y-axis tick labels; the y-axis ticks; and the title of the legend from the plot
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(), 
+        legend.title = element_blank()) + 
+  # Create my own discrete scale, relabeling levels "Dem" to "Democrat", "Rep" to "Republican", "Und" to "Undecided", and "3" to "Third Party"; assign aesthetic values so that "skyblue2" corresponds to "Democrat", "lightcoral" corresponds to "Republican", "thistle4" corresponds to "Undecided", and "plum3" corresponds to "Third Party"; I chose these colors intentionally, as blue is typically associated with the Democratic Party; as red is typically associated with the Republican Party; as grey indicates a "grey area," so to speak, and so corresponds with "Undecided"; and as purple is both off-blue and off-red and so corresponds with "Third Party"; I understand that the colors I chose are not perfectly blue, red, grey, and purple, but I chose colors I thought went nicely together guided by that color palette
+  scale_fill_manual(labels = c("Democrat", "Republican", "Undecided", "Third Party"), 
+                    values = c("skyblue2", "lightcoral", "thistle4", "plum3"))
 ```
