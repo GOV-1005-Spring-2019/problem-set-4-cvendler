@@ -86,7 +86,7 @@ The first `response` of Dem came `r mad_lib_5` minutes (rounded to the nearest m
 data_to_chart <- orig_data %>% 
   # Select only the variables pertinent to the chart, which are "response", "race_eth", and "final_weight"
   select(response, race_eth, final_weight) %>% 
-  # Filter the data so that answers to "race_eth" that read "[DO NOT READ] Don't know/Refused" are excluded, per the instruction within the brackets: DO NOT READ
+  # Filter the data so that answers to "race_eth" that read "[DO NOT READ] Don't know/Refused" are excluded, per the instruction within the brackets: "DO NOT READ"
   filter(race_eth != "[DO NOT READ] Don't know/Refused") %>% 
   # Reorder the levels of the factor "race_eth" so that "White" is first, "Black" is second, "Hispanic" is third, "Asian" is fourth, and "Other" is fifth
   mutate(race_eth = fct_relevel(race_eth, 
@@ -129,4 +129,26 @@ gt(data_to_chart) %>%
               decimals = 0) %>% 
   # Reformat the value housed in the fourth row of the "UND." column, which reads "NA", as a missing value, so that "NA" is replaced with an em-dash
   fmt_missing(columns = vars(Und), rows = 4)
+```
+
+## Question 3
+
+```{r create_graphic, fig.width = 7.1}
+# Create a new dataset called "data_to_plot" to plot using ggplot; begin with the "orig_data" dataset
+data_to_plot <- orig_data %>% 
+  # Select only the variables pertinent to the plot, which are "educ" and "final_weight"
+  select(educ, final_weight) %>% 
+  # Filter the data so that answers to "educ" that read "[DO NOT READ] Refused" are excluded, per the instruction within the brackets: "DO NOT READ"
+  filter(educ != "[DO NOT READ] Refused") %>% 
+  mutate(educ = fct_relevel(educ, c("Grade school", "High school", "Some college or trade school", "Bachelors' degree", "Graduate or Professional Degree")))
+
+ggplot(data_to_plot, aes(x = educ, y = final_weight)) + 
+  geom_violin() + 
+  coord_flip() + 
+  geom_jitter(height = 0.1, width = 0.2, alpha = 0.5) + 
+  labs(x = "", 
+       y = "Weight Given to Respondent in Calculating Poll Results", 
+       title = "More Educated Matter Less in North Carolina 9th", 
+       subtitle = "Poll gives more weight to people who are less likely to participate in polls", 
+       caption = "New York Times Upshot/Siena College 2018 live polls")
 ```
