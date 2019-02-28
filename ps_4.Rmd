@@ -18,3 +18,63 @@ library(tidyverse)
 # Read in the file "ps_4_elections-poll-nc09-3.csv" and store as new dataset called "orig_data"
 orig_data <- read_csv("ps_4_elections-poll-nc09-3.csv")
 ```
+
+## Question 1
+
+```{r mad_libs}
+# To fill in Mad Lib 1, create a new dataset called "mad_lib_1" in order to replace the "X" with the content of "mad_lib_1" dynamically using inline R code (here, the content is a singular number); begin with the "orig_data" dataset
+mad_lib_1 <- orig_data %>% 
+  # Filter the data to keep only observations for respondents who responded "Dem"
+  filter(response == "Dem") %>% 
+  # Count the number of observations in order to determine the number of respondents who supported the Democratic candidate
+  count()
+
+# To fill in Mad Lib 2, create a new dataset called "mad_lib_2" in order to replace the "X" with the content of "mad_lib_2" dynamically using inline R code (here, the content is a singular number); begin with the "orig_data" dataset
+mad_lib_2 <- orig_data %>% 
+  # Filter the data to keep only observations for respondents who responded either "Rep" or "Und"
+  filter(response %in% c("Rep", "Und")) %>% 
+  # Count the observations by response (count the number of respondents who responded "Rep" and the number of respondents who responded "Und")
+  count(response) %>% 
+  # Spread the data using the variable "response" (the values of which are "Rep" and "Und") as the key and using the variable "n" (the values of which are the counts from above) as the value so that the dataset has two columns--one for "Rep" and one for "Und"--and one row, within which are the corresponding counts for "Rep" and "Und" responses
+  spread(response, n) %>% 
+  # Calculate the difference ("diff") between the count for Rep and the count for Und, reflecting how many more respondents there were who favored the Republican candidate than who were undecided
+  summarize(diff = Rep - Und)
+  
+# To fill in Mad Lib 3, create a new dataset called "mad_lib_3" in order to replace the "X" with the content of "mad_lib_3" dynmically using inline R code (here, the content is a singular number); begin with the "orig_data" dataset
+mad_lib_3 <- orig_data %>% 
+  # Filter the data to keep only observations where the variables "gender" and "gender_combined" have different values
+  filter(gender != gender_combined) %>% 
+  # Count the number of observations in order to determine the number of individuals for whom the variables "gender" and "gender_combined" have different values
+  count()
+
+# To fill in Mad Lib 4, create a new dataset called "mad_lib_4" in order to replace the "X" with the content of "mad_lib_4" dynmically using inline R code (here, the content is a singular number); begin with the "orig_data" dataset
+mad_lib_4 <- orig_data %>% 
+  # Filter the data to keep only observations for respondents listed as "White" under "race_eth" but not listed as "White" under "file_race_black"
+  filter(race_eth == "White", 
+         file_race_black != "White") %>% 
+  # Count the number of observations in order to determine the number of respondents listed as "White" under "race_eth" who are not listed as "White" under "file_race_black"
+  count()
+
+# To fill in Mad Lib %, create a new dataset called "mad_lib_5" in order to replace the "X" with the content of "mad_lib_5" dynmically using inline R code (here, the content is a singular number); begin with the "orig_data" dataset
+mad_lib_5 <- orig_data %>% 
+  # Filter the data to keep only observations for respondents who responded either "Dem" or "Rep"
+  filter(response %in% c("Dem", "Rep")) %>% 
+  # Group the data by the variable "response" in order to be able to compare first-response-timestamps across responses (here, "Dem" and "Rep")
+  group_by(response) %>% 
+  # Summarize the data in order to determine the timestamps of the first responses of "Dem" and "Rep" respectively ("first_response")
+  summarize(first_response = min(timestamp)) %>% 
+  # Spread the data using the varible "response" (the values of which are "Dem" and "Rep") as the key and using the variable "first_response" (the values of which are the timestamps of the first responses of "Dem" and "Rep" respectively) as the value so that the dataset has two columns--one for "Dem" and one for "Rep"--and one row, within which are the timestamp of the first "Dem" response and that of the first "Rep" response
+  spread(response, first_response) %>% 
+  # Calculate the time difference ("diff"), rounded to the nearest minute, between the timestamp of the first "Rep" response and that of the first "Dem" response in order to determine by how many minutes the first "Dem" response came before the first "Rep" response
+  summarize(diff = round(Rep - Dem))
+```
+
+There were `r mad_lib_1` respondents who supported the Democratic candidate.
+
+There were `r mad_lib_2` more respondents who favored the Republican candidate than who were Undecided.
+
+There are two gender variables (`gender` and `gender_combined`). There are `r mad_lib_3` individuals for whom these variables have different values.
+
+There are `r mad_lib_4` respondents listed as “White” under `race_eth` who are not listed as “White” under  `file_race_black`.
+
+The first `response` of Dem came `r mad_lib_5` minutes (rounded to the nearest minute) before the first `response` of Rep.
